@@ -1,0 +1,230 @@
+version: "3.5"
+networks:
+  broker:
+    name: broker
+
+services:
+  # traefic template from https://gist.github.com/Mau5Machine/00401feb19433cf0387cc66c8e90c26c
+  #
+  proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.4
+    # Enables the web UI and tells Traefik to listen to docker
+    ports:
+      # The Web UI (enabled by --api.insecure=true)
+      # - "8080:8080"
+      # regular web 
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt # <== Volume for certs (TLS)
+      - type: bind
+        source: ./logs
+        target: /logs
+
+    command:
+      #### These are the CLI commands that will configure Traefik and tell it how to work! ####
+      ## API Settings - https://docs.traefik.io/operations/api/, endpoints - https://docs.traefik.io/operations/api/#endpoints ##
+      - --api.insecure=false # <== Enabling insecure api, NOT RECOMMENDED FOR PRODUCTION
+      - --api.dashboard=true # <== Enabling the dashboard to view services, middlewares, routers, etc...
+      - --api.debug=false # <== Enabling additional endpoints for debugging and profiling
+      - --accesslog=true # <== https://doc.traefik.io/traefik/observability/access-logs/ 
+      - --accesslog.filepath=/logs/traefik-access.log
+      - --accesslog.fields.defaultMode=keep
+      - --accesslog.fields.headers.names.User-Agent=keep
+      - --accesslog.fields.headers.names.Authorization=drop
+      - --accesslog.fields.headers.names.Cookie=drop
+      - --accesslog.fields.headers.names.Accept-Language=keep
+      ## Log Settings (options: ERROR, DEBUG, PANIC, FATAL, WARN, INFO) - https://docs.traefik.io/observability/logs/ ##
+      - --log.level=DEBUG # <== Setting the level of the logs from traefik
+      ## Provider Settings - https://docs.traefik.io/providers/docker/#provider-configuration ##
+      - --providers.docker=true # <== Enabling docker as the provider for traefik
+      - --providers.docker.exposedbydefault=false # <== Don't expose every container to traefik, only expose enabled ones
+      ### - --providers.file.filename=/dynamic.yaml # <== Referring to a dynamic configuration file
+      - --providers.docker.network=front-end # <== Operate on the docker network named web
+      ## Entrypoints Settings - https://docs.traefik.io/routing/entrypoints/#configuration ##
+      - --entrypoints.web.address=:80 # <== Defining an entrypoint for port :80 named web
+      - --entrypoints.web-secured.address=:443 # <== Defining an entrypoint for https on port :443 named web-secured
+      # https://doc.traefik.io/traefik/v2.2/routing/entrypoints/#redirection
+      - --entrypoints.web.http.redirections.entryPoint.to=web-secured
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      ## Certificate Settings (Let's Encrypt) -  https://docs.traefik.io/https/acme/#configuration-examples ##
+      - --certificatesResolvers.letsencrypt.acme.email=remco.b@educationwarehouse.nl # <== Setting email for certs
+      - --certificatesResolvers.letsencrypt.acme.storage=/letsencrypt/acme.json # <== Defining acme file to store cert information
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge=true
+      - --certificatesResolvers.letsencrypt.acme.httpChallenge.entryPoint=web
+      ## Staging Certificate Settings (Let's Encrypt) -  https://docs.traefik.io/https/acme/#configuration-examples ##
+      - --certificatesResolvers.staging.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory # staging, remove for production
+      - --certificatesResolvers.staging.acme.email=remco.b@educationwarehouse.nl # <== Setting email for certs
+      - --certificatesResolvers.staging.acme.storage=/letsencrypt/staging.json # <== Defining acme file to store cert information
+      - --certificatesResolvers.staging.acme.httpChallenge=true
+      - --certificatesResolvers.staging.acme.httpChallenge.entryPoint=web
+      - --pilot.token=4b57723d-5718-4c3d-bae6-7addf1d346d2
+    labels:
+      #### Labels define the behavior and rules of the traefik proxy for this container ####
+      ### see https://doc.traefik.io/traefik/v2.0/routing/routers/ for more
+      - "traefik.enable=true" # <== Enable traefik on itself to view dashboard and assign subdomain to view it
+      - "traefik.http.routers.api.rule=HostRegexp(`traefik.{anydomain:.*}`,`proxy.{anydomain:.*}`)" # <== Setting the domain for the dashboard
+      - "traefik.http.routers.api.service=api@internal" # <== Enabling the api to be a service to access
+
+      # strip front-end version: (/v0.9/front_end/ -> /front_end/)
+      - "traefik.http.middlewares.strip-front-end-version.stripprefixregex.regex=^/(dev|v?[0-9.]+)/"
+
+      # allow CORS:
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,OPTIONS,PUT,POST"
+      # - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
+      - "traefik.http.middlewares.cors.headers.accessControlAllowOriginListRegex=(.*)"
+      - "traefik.http.middlewares.cors.headers.accessControlAllowHeaders=content-type,hx-request,hx-current-url,hx-prompt,hx-history-restore-request,hx-target,hx-trigger-name,hx-trigger" # zie https://htmx.org/reference/#request_headers
+      - "traefik.http.middlewares.cors.headers.accessControlAllowCredentials=true"
+      - "traefik.http.middlewares.cors.headers.accessControlExposeHeaders=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+
+      # www to non-www
+      - "traefik.http.middlewares.www-redirect.redirectregex.regex=^https?://www.(.+)"
+      - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}"
+      - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
+
+    networks:
+      broker:
+        aliases:
+          - proxy
+      front-end:
+        aliases:
+          - proxy
+      backend:
+        aliases:
+          - proxy
+  killit:
+    build:
+      context: .
+      dockerfile: serviceworker.Dockerfile
+    expose:
+      - 8000
+    networks:
+      - front-end
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.serviceworker-killer.loadbalancer.server.port=8000"
+      - "traefik.http.routers.serviceworker-killer-secure.tls=true"
+      - "traefik.http.routers.serviceworker-killer-secure.tls.certresolver=${CERTRESOLVER}"
+      - "traefik.http.routers.serviceworker-killer-secure.rule=(Host(`py4web.${HOSTINGDOMAIN}`) || Host(`hetnieuwedelen.${HOSTINGDOMAIN}`)) && Path(`/service-worker.js`)"
+      # - "traefik.http.routers.serviceworker-killer-secure.priority=250"
+      # priority is calculated on length by default, and the other route has a length of ~ 75.
+      # by setting the priority to 250, we force the router to use this route on the /service-worker.js path!
+      # this does not work, so we must make a more specific route by including the Hosts+
+
+  py4web:
+    build:
+      context: .
+      dockerfile: py4web.Dockerfile
+    restart: always
+    expose:
+      - 8000
+      - 7999
+    environment:
+      REDIS_MASTER_HOST: redis
+      GRAPHQL_URI: http://graphql:8001/  # for direct access
+      PY4WEB_DASHBOARD_MODE: full # if via uwsgi, the py4web's run method isn't ran, we'll have to use the ENV vars
+      PY4WEB_PASSWORD_FILE: /p4w/password.txt # to parameterize the _dashboard app
+      PY4WEB_RESTART_SECRET: 2lCV8IyUPMojlsdf4wjt
+      # GRAPHQL_URI:s https://api-test.edwh.nl/graphql/?api_key=e4qVbM7vqINbUJXpO1zANrJjuEgwjimiW2tV0wNQ
+      ENABLE_ICECREAM: 1
+      HOSTINGDOMAIN: ${HOSTINGDOMAIN}
+      PY4WEB_APPLOG_KEY: ${PY4WEB_APPLOG_KEY}
+      PY4WEB_APPLOG_ID: ${PY4WEB_APPLOG_ID}
+      GHOST_ADMIN_API_KEY_LEIDEN: ${GHOST_ADMIN_API_KEY_LEIDEN}
+      GHOST_CONTENT_API_KEY_LEIDEN: ${GHOST_CONTENT_API_KEY_LEIDEN}
+      # PYTHONIOENCODING: "UTF-8"
+    volumes:
+      - type: bind
+        source: ./uploaded_attachments
+        target: /p4w/apps/front_end/uploads
+      - type: bind
+        source: ./apps
+        target: /p4w/apps
+    networks:
+      - front-end
+      - broker
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.py4web-dev.loadbalancer.server.port=8000"
+      - "traefik.http.routers.fragments-secure.tls=true"
+      - "traefik.http.routers.fragments-secure.tls.certresolver=${CERTRESOLVER}"
+      - "traefik.http.routers.fragments-secure.rule=Host(`fragments.${HOSTINGDOMAIN}`) && (PathPrefix(`/dev/`)||PathPrefix(`/v1.0/`))"
+      - "traefik.http.routers.fragments-secure.middlewares=strip-front-end-version, add-dev-version-header, cors"
+      - "traefik.http.routers.py4web-secure.tls=true"
+      - "traefik.http.routers.py4web-secure.tls.certresolver=${CERTRESOLVER}"
+      - "traefik.http.routers.py4web-secure.rule=Host(`py4web.${HOSTINGDOMAIN}`) || Host(`hetnieuwedelen.${HOSTINGDOMAIN}`) || Host(`www.py4web.${HOSTINGDOMAIN}`) || Host(`www.hetnieuwedelen.${HOSTINGDOMAIN}`)"
+      - "traefik.http.routers.py4web-secure.middlewares=cors, www-redirect"
+      - "traefik.http.middlewares.add-dev-version-header.headers.customrequestheaders.X-EDWH-VER=dev"
+      - "traefik.http.middlewares.testheader.headers.accessControlAllowOrigin=*.${HOSTINGDOMAIN}"
+      - "traefik.http.middlewares.testheader.headers.accessControlAllowHeaders=content-type,hx-request,hx-current-url"
+      - "traefik.http.middlewares.testheader.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.testheader.headers.addvaryheader=true"
+
+  py4web-v0.9:
+    build:
+      context: .
+      dockerfile: py4web.Dockerfile
+    expose:
+      - 8000
+      - 7999
+    environment:
+      FRONT_END_VERSION: 0.9
+      REDIS_MASTER_HOST: redis
+      GRAPHQL_URI: http://graphql:8001/  # for direct access
+      PY4WEB_DASHBOARD_MODE: full # if via uwsgi, the py4web's run method isn't ran, we'll have to use the ENV vars
+      PY4WEB_PASSWORD_FILE: /p4w/password.txt # to parameterize the _dashboard app
+      #GRAPHQL_URI:s https://api-test.edwh.nl/graphql/?api_key=e4qVbM7vqINbUJXpO1zANrJjuEgwjimiW2tV0wNQ
+    #      ENABLE_ICECREAM: 1
+    volumes:
+      - type: bind
+        source: ./apps-v0.9
+        target: /p4w/apps
+    networks:
+      - front-end
+      - broker
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.add-0-9-version-header.headers.customrequestheaders.X-EDWH-VER=0.9"
+      - "traefik.http.services.py4web-v0-9.loadbalancer.server.port=8000"
+      - "traefik.http.routers.fragments-v0-9.tls=true"
+      - "traefik.http.routers.fragments-v0-9.tls.certresolver=${CERTRESOLVER}"
+      - "traefik.http.routers.fragments-v0-9.rule=Host(`fragments.${HOSTINGDOMAIN}`) && PathPrefix(`/v0.9/`)"
+      - "traefik.http.routers.fragments-v0-9.middlewares=strip-front-end-version, add-dev-version-header, cors"
+
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+    restart: always
+    networks:
+      - front-end
+
+
+  hotload:
+    restart: "no"
+    build:
+      context: .
+      dockerfile: py4web.Dockerfile
+    environment:
+      GRAPHQL_URI: http://graphql:8001/  # for direct access
+      FRONTEND_URI: http://py4web:8000/front_end/
+    networks:
+      - broker
+    volumes:
+      - type: bind
+        source: ./hotload.py
+        target: /hotload.py
+    command: python3 /hotload.py
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"

@@ -109,7 +109,7 @@ def setup(c):
     # force access rights
     c.sudo('chmod 770 ./letsencrypt')
     if list(Path('./letsencrypt').glob('*')):
-        c.sudo('chmod 660 ./letsencrypt/*')
+        c.sudo('chmod 600 ./letsencrypt/*')
     dotenv_path = Path('.env')
     if not dotenv_path.exists():
         dotenv_path.touch()
@@ -126,12 +126,13 @@ def up(c):
     c.run('docker-compose up -d proxy')
 
 @task
-def restart(c):
+def restart(c,follow=False):
     "docker-compose stop and up -d of proxy only"
     c:Context = c
     c.run('docker-compose stop proxy')
     c.run('docker-compose up -d proxy')
-
+    if follow:
+        logs(c)
 @task
 def logs(c, n=100):
     "Tail the proxy log starting with the last n(default=100) lines. "

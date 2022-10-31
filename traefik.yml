@@ -4,6 +4,7 @@
 # Own solution: use `invoke setup` to apply templates.
 # indention is preserved, {ENV_VAR} is substituted,
 
+
 api:
   insecure: false
   dashboard: false
@@ -22,10 +23,13 @@ accessLog:
 
 log:
   ## Log Settings (options: ERROR, DEBUG, PANIC, FATAL, WARN, INFO) - https://docs.traefik.io/observability/logs/ ##
-  level: INFO
+  level: DEBUG
 
 
 providers:
+  file:
+    filename: /server/dynamic.yaml
+    watch: true
   docker:
     # main help: https://doc.traefik.io/traefik/providers/docker/
     exposedByDefault: false
@@ -46,16 +50,13 @@ entryPoints:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: xxx # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
       httpChallenge:
         entryPoint: web
   staging:
     acme:
-      email: xxxx # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
       httpChallenge:
         entryPoint: web
-#pilot:
-#  token: demo demo # template: token: {TRAEFIK_PILOT_TOKEN}
-

@@ -117,6 +117,9 @@ def setup(c):
     check_env(dotenv_path, key='TRAEFIK_CERTIFICATE_EMAIL', default='')
     check_env(dotenv_path, key='TRAEFIK_PILOT_TOKEN', default='default')
     apply_dotenv_vars_to_yaml_templates(Path('traefik.yml'), dotenv_path)
+    domain = input('Create a certificate for domain, empty is abort, example "dockers.local": ')
+    if domain:
+        mk_certificate(c, domain)
     print('Use `invoke up` to start docker container.')
 
 @task
@@ -153,3 +156,56 @@ def pip_for_invoke(c, args=''):
         else:
             pip = f'{sys.executable} -m pip'
     c.run(f'{pip} {args}')
+
+
+import pathlib
+@task
+def mk_certificate(c, domain):
+    # heavily inspired by https://stackoverflow.com/questions/19665863/how-do-i-use-a-self-signed-certificate-for-a-https-node-js-server
+    try:
+        c.run('mkdir server/ client/ root_cert/')
+    except:
+        pass
+
+    print("create ow own root certificate authority")
+    if not pathlib.Path('/root_cert/ca.private.pem').exists():
+        c.run("openssl genrsa -out root_cert/ca.private.pem 2048")
+
+    print("self sign the root certificate authority")
+    if not pathlib.Path('/root_cert/ca.cert.pem').exists():
+        c.run("openssl req -x509 -new -nodes -key root_cert/ca.private.pem -days 10000 -out root_cert/ca.cert.pem "
+              " -subj \"/C=NL/O=EDWH Development ONLY/CN=edwh.local\"")
+
+    print("create a new private key for the specific host")
+    c.run("openssl genrsa -out server/private.pem 2048")
+
+    print("create a device certificate for a wildcard domain")
+    c.run(f'openssl req -new -key server/private.pem -out server/csr.pem -subj "/C=NL/O=EDWH dev/CN=*.{domain}"')
+
+    print("sign the request from device with the root CA")
+    c.run("openssl x509 -req -in server/csr.pem "
+          "-CA root_cert/ca.cert.pem "
+          "-CAkey root_cert/ca.private.pem "
+          "-CAcreateserial "
+          "-out server/cert.pem "
+          "-days 10000")
+
+    print("create a fullchain, because mostly you need a fullchain")
+    c.run("cp root_cert/ca.cert.pem server/fullchain.pem")
+
+    print("cp the root ca's pem file for the client to use (if you want to)")
+    c.run("cp root_cert/ca.cert.pem client/ca.cert.pem")
+
+    print("perpare a DER format crt for IOS etc")
+    c.run("openssl x509 -outform der -in root_cert/ca.cert.pem -out client/ca.cert.der-format.crt")
+
+    with open('server/dynamic.yaml','w')  as stream:
+        import textwrap
+        stream.write(textwrap.dedent('''
+        tls:
+          stores:
+            default:
+              defaultCertificate:
+                certFile: /server/cert.pem
+                keyFile: /server/private.pem
+        '''))

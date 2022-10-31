@@ -41,6 +41,11 @@ services:
         source: ./traefik.yml
         target: /etc/traefik/traefik.yml
 
+      # server certificates
+      - type: bind
+        source: ./server
+        target: /server
+
     labels:
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       ### see https://doc.traefik.io/traefik/v2.0/routing/routers/ for more

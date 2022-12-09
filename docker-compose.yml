@@ -67,6 +67,9 @@ services:
       - "traefik.http.middlewares.www-redirect.redirectregex.replacement=https://$${1}"
       - "traefik.http.middlewares.www-redirect.redirectregex.permanent=true"
 
+      # define only: strip front-end version: (/v0.9/front_end/ -> /front_end/)
+      - "traefik.http.middlewares.strip-front-end-version.stripprefixregex.regex=^/(dev|v?[0-9.]+)/"
+      -
     networks:
       broker:
         aliases:

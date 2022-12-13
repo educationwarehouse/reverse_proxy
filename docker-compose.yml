@@ -69,7 +69,7 @@ services:
 
       # define only: strip front-end version: (/v0.9/front_end/ -> /front_end/)
       - "traefik.http.middlewares.strip-front-end-version.stripprefixregex.regex=^/(dev|v?[0-9.]+)/"
-      -
+
     networks:
       broker:
         aliases:

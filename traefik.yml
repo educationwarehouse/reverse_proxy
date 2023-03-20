@@ -60,3 +60,8 @@ certificatesResolvers:
       storage: /letsencrypt/staging.json
       httpChallenge:
         entryPoint: web
+
+tls: # https://doc.traefik.io/traefik/https/tls/#minimum-tls-version
+  options:
+    default:
+      minVersion: VersionTLS12

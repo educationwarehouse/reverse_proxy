@@ -80,3 +80,4 @@ services:
       broker:
         aliases:
           - proxy
+          - web2py.${HOSTINGDOMAIN}

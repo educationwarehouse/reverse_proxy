@@ -71,7 +71,7 @@ services:
       - "traefik.http.middlewares.strip-front-end-version.stripprefixregex.regex=^/(dev|v?[0-9.]+)/"
 
       # add HSTS headers using a edwh-middleware
-      - "traefik.http.middlewares.edwh-std-security.headers.framedeny=true"
+      - "traefik.http.middlewares.edwh-std-security.headers.customFrameOptionsValue=SAMEORIGIN"
       - "traefik.http.middlewares.edwh-std-security.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.edwh-std-security.headers.stsIncludeSubdomains=true"
 

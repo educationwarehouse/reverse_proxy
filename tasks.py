@@ -1,7 +1,8 @@
-import contextlib
 import os
 import re
 import sys
+import textwrap
+import contextlib
 
 from invoke import task, Result
 from invoke.context import Context
@@ -79,14 +80,13 @@ def mk_certificate(c, domain):
     print("create a fullchain, because mostly you need a fullchain")
     c.run("cp root_cert/ca.cert.pem server/fullchain.pem")
 
-    print("cp the root ca's pem file for the client to use (if you want to)")
+    print("copy the root ca's pem file for the client to use (if you want to)")
     c.run("cp root_cert/ca.cert.pem client/ca.cert.pem")
 
-    print("perpare a DER format crt for IOS etc")
+    print("prepare a DER format crt for iOS etc.")
     c.run("openssl x509 -outform der -in root_cert/ca.cert.pem -out client/ca.cert.der-format.crt")
 
     with open('server/dynamic.yaml','w')  as stream:
-        import textwrap
         stream.write(textwrap.dedent('''
         tls:
           stores:

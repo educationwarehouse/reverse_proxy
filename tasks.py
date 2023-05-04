@@ -117,8 +117,7 @@ def setup(c):
     check_env(dotenv_path, key='TRAEFIK_CERTIFICATE_EMAIL', default='')
     check_env(dotenv_path, key='TRAEFIK_PILOT_TOKEN', default='default')
     apply_dotenv_vars_to_yaml_templates(Path('traefik.yml'), dotenv_path)
-    domain = input('Create a certificate for domain, empty is abort, example "dockers.local": ')
-    if domain:
+    if check_env(dotenv_path, key='HOSTING_DOMAIN', default='dockers.local'):
         mk_certificate(c, domain)
     print('Use `invoke up` to start docker container.')
 

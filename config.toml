@@ -1,0 +1,15 @@
+[services]
+# services is a list of services available, or 'discover' to discover them from the docker-compose.yml file
+services='discover'
+
+# minimal are the minmal services to start when `ewdh up` is issued
+minimal=["proxy"]
+
+# default to log
+log=["proxy"]
+
+# weather or not to include the celery services in the minimal set (start with `ewdh up`)
+include_celeries_in_minimal=false
+
+[dotenv]
+path='.env'

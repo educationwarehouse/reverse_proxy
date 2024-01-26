@@ -6,3 +6,6 @@ __pycache__
 client/
 root_cert/
 server/
+*.swp
+venv*
+.idea/

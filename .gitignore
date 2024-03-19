@@ -9,3 +9,4 @@ server/
 *.swp
 venv*
 .idea/
+.toml

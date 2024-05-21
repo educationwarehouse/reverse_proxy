@@ -78,6 +78,10 @@ services:
       #added for Zoetermeer, Leiden
       - "traefik.http.middlewares.regio-headers.headers.contentSecurityPolicy=frame-ancestors https://*.edwh.nl https://*.meteddie.nl https://*.rijkeleeromgevingzoetermeer.nl https://*.onderwijsindeleidseregio.nl"
 
+      # websockets
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+
+
     networks:
       broker:
         aliases:

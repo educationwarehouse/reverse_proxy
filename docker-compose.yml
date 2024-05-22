@@ -87,3 +87,4 @@ services:
         aliases:
           - proxy
           - web2py.${HOSTING_DOMAIN}
+          - socket.${HOSTING_DOMAIN}

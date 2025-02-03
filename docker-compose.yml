@@ -76,7 +76,7 @@ services:
       - "traefik.http.middlewares.edwh-std-security.headers.stsIncludeSubdomains=true"
 
       # added for Zoetermeer, Leiden
-      - "traefik.http.middlewares.regio-headers.headers.contentSecurityPolicy=frame-ancestors https://*.edwh.nl https://*.meteddie.nl https://rijkeleeromgevingzoetermeer.nl https://*.rijkeleeromgevingzoetermeer.nl https://*.onderwijsindeleidseregio.nl https://onderwijsindeleidseregio.nl"
+      - "traefik.http.middlewares.regio-headers.headers.contentSecurityPolicy=frame-ancestors https://*.edwh.nl https://*.meteddie.nl https://rijkeleeromgevingzoetermeer.nl https://*.rijkeleeromgevingzoetermeer.nl https://*.onderwijsindeleidseregio.nl https://onderwijsindeleidseregio.nl https://${HOSTING_DOMAIN} https://*.${HOSTING_DOMAIN}"
 
       # websockets
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"

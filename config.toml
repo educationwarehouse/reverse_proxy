@@ -8,7 +8,7 @@ minimal=["proxy"]
 # default to log
 log=["proxy"]
 
-# weather or not to include the celery services in the minimal set (start with `ewdh up`)
+# whether or not to include the celery services in the minimal set (start with `edwh up`)
 include_celeries_in_minimal=false
 
 [dotenv]

@@ -13,3 +13,12 @@ include_celeries_in_minimal=false
 
 [dotenv]
 path='.env'
+
+[cors]
+domains = [
+    "edwh.nl",
+    "meteddie.nl",
+    "rijkeleeromgevingzoetermeer.nl",
+    "onderwijsindeleidseregio.nl",
+    "dedaadvanhetonderwijs.nl",
+]

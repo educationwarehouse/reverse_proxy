@@ -75,7 +75,7 @@ def setup(c):
 
     generate_cors(c)
 
-    mk_certificate(c, domain)
+    # mk_certificate(c, domain)
     edwh.tasks.apply_dotenv_vars_to_yaml_templates(Path("traefik.yml"), dotenv_path)
     print(f"Use `{Path(sys.argv[0]).name} up` to start docker container.")
 

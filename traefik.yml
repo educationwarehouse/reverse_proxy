@@ -76,3 +76,25 @@ tls: # https://doc.traefik.io/traefik/https/tls/#minimum-tls-version & https://w
        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
     tlsv13only:
       minVersion: VersionTLS13
+
+
+
+http:
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowMethods:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+
+  routers:
+    my-router:
+      rule: "Host(`superset.utils2.edwh.nl`)"
+      middlewares:
+        - cors
+

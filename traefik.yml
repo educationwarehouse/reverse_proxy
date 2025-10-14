@@ -81,7 +81,7 @@ tls: # https://doc.traefik.io/traefik/https/tls/#minimum-tls-version & https://w
 
 http:
   middlewares:
-    cors:
+    superset-cors:
       headers:
         accessControlAllowOriginList:
           - "*"
@@ -96,9 +96,9 @@ http:
     my-router:
       rule: "Host(`superset.utils2.edwh.nl`)"
       middlewares:
-        - cors
+        - superset-cors
     # Bijbehorende labesl voor je docker compose service en CORS headers:
-    #  - "traefik.http.routers.my-router.middlewares=cors"
-    #  - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
-    #  - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=*"
-    #  - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=*"
+    #  - "traefik.http.routers.my-router.middlewares=superset-cors"
+    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolalloworiginlist=*"
+    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowmethods=*"
+    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowheaders=*"

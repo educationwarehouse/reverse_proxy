@@ -93,12 +93,12 @@ http:
         addVaryHeader: true
 
   routers:
-    my-router:
+    superset-router:
       rule: "Host(`superset.utils2.edwh.nl`)"
       middlewares:
         - superset-cors
     # Bijbehorende labesl voor je docker compose service en CORS headers:
-    #  - "traefik.http.routers.my-router.middlewares=superset-cors"
+    #  - "traefik.http.routers.superset-router.middlewares=superset-cors"
     #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolalloworiginlist=*"
     #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowmethods=*"
     #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowheaders=*"

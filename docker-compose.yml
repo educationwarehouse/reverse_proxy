@@ -9,7 +9,7 @@ services:
   #
   proxy:
     # The official v2 Traefik docker image
-    image: traefik:v3.3
+    image: traefik:v3.6.1
 
     ports:
       # Enables the web UI and tells Traefik to listen to docker

@@ -42,7 +42,7 @@ def generate_cors(_: Context) -> Optional[str]:
 
 
 @task
-def setup(c):
+def setup(c: Context):
     "Setup or update the traefik environment."
     print("Setting up reverse proxy...")
     if not Path("./logs").exists():
@@ -73,6 +73,19 @@ def setup(c):
         comment="From which domain will you access your dockers? (used to host web2py subdomain for CAS and domain certificates)",
     )
 
+    internet_accessible = (
+        edwh.tasks.check_env(
+            key="INTERNET_ACCESSIBLE",
+            default="0" if domain.endswith((".localhost", ".local")) else "1",
+            comment="Should this server be accessed from the internet? (if no, we can use local ssl certs)",
+        )
+        == "1"
+    )
+
+    if not internet_accessible:
+        # create local certificate:
+        mk_certificate(c, domain)
+
     generate_cors(c)
 
     # mk_certificate(c, domain)
@@ -81,12 +94,9 @@ def setup(c):
 
 
 @task
-def mk_certificate(c, domain):
+def mk_certificate(c: Context, domain):
     # heavily inspired by https://stackoverflow.com/questions/19665863/how-do-i-use-a-self-signed-certificate-for-a-https-node-js-server
     print("Making certificates for domain", domain)
-    from invoke import Runner
-
-    c: Runner
     c.run("mkdir server/ client/ root_cert/", hide=True, warn=True, echo=False)
 
     print("create ow own root certificate authority")

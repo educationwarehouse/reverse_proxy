@@ -34,6 +34,7 @@ providers:
     # main help: https://doc.traefik.io/traefik/providers/docker/
     exposedByDefault: false
     network: broker
+    allowEmptyServices: true
 
 entryPoints:
   web:
@@ -46,17 +47,20 @@ entryPoints:
           permanent: true
   web-secured:
     address: ":443"
+    http:
+      middlewares:
+        - global-errors@file
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
       httpChallenge:
         entryPoint: web
   staging:
     acme:
-      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
       httpChallenge:
         entryPoint: web

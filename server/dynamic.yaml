@@ -5,3 +5,18 @@ tls:
       defaultCertificate:
         certFile: /server/cert.pem
         keyFile: /server/private.pem
+
+http:
+  middlewares:
+    global-errors:
+      errors:
+        status:
+          - "500-599"
+        service: error-pages
+        query: "/404.html"
+
+  services:
+    error-pages:
+      loadBalancer:
+        servers:
+          - url: "http://error-pages:80"

@@ -25,6 +25,7 @@ ew logs
 ```
 
 Traefik.yaml is where most custom configurations are defined, here you can add extra behaviour. 
+More information about Traefik itself can be found here: https://doc.traefik.io/traefik/
 Custom 404 is only active when a service is known, but unrepsonsive (broken conatiner/unhealthy). This html can be editted from within the error pages folder.
 
 NOTE: 

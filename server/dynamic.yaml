@@ -5,3 +5,10 @@ tls:
       defaultCertificate:
         certFile: /server/cert.pem
         keyFile: /server/private.pem
+http:
+  middlewares:
+    global-hsts:
+      headers:
+        stsSeconds: 300
+        stsIncludeSubdomains: false
+        stsPreload: false

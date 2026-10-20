@@ -9,6 +9,6 @@ http:
   middlewares:
     global-hsts:
       headers:
-        stsSeconds: 300
+        stsSeconds: 31536000
         stsIncludeSubdomains: false
         stsPreload: false

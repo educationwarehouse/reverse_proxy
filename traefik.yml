@@ -46,9 +46,9 @@ entryPoints:
           permanent: true
   web-secured:
     address: ":443"
-    http:
-      middlewares:
-        - global-hsts@file
+    # http:
+    #   middlewares:
+    #     - global-hsts@file
 
 certificatesResolvers:
   letsencrypt:

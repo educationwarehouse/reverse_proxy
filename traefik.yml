@@ -55,12 +55,14 @@ certificatesResolvers:
     acme:
       email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
+      keyType: EC256
       httpChallenge:
         entryPoint: web
   staging:
     acme:
       email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
+      keyType: EC256
       httpChallenge:
         entryPoint: web
 

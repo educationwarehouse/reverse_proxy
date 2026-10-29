@@ -32,13 +32,6 @@ tls:
 
 http:
   middlewares:
-    # Custom error pages
-    global-errors:
-      errors:
-        status:
-          - "500-599"
-        service: error-pages
-        query: "/404.html"
 
     # Superset CORS
     superset-cors:
@@ -59,9 +52,3 @@ http:
         stsPreload: false
         contentTypeNosniff: true
         referrerPolicy: same-origin
-
-  services:
-    error-pages:
-      loadBalancer:
-        servers:
-          - url: "http://error-pages:80"

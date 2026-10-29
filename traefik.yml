@@ -34,6 +34,7 @@ providers:
     # main help: https://doc.traefik.io/traefik/providers/docker/
     exposedByDefault: false
     network: broker
+    allowEmptyServices: true
 
 entryPoints:
   web:
@@ -46,64 +47,21 @@ entryPoints:
           permanent: true
   web-secured:
     address: ":443"
-    # http:
-    #   middlewares:
-    #     - global-hsts@file
+    http:
+      middlewares:
+        - security-baseline@file
+        - global-errors@file
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
-      keyType: EC256
       httpChallenge:
         entryPoint: web
   staging:
     acme:
-      email: remco@isdruk.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email:  # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
-      keyType: EC256
       httpChallenge:
         entryPoint: web
-
-tls: # https://doc.traefik.io/traefik/https/tls/#minimum-tls-version & https://www.djpic.net/articles/traefik-v2-secure-tls-and-header-configuration-with-docker-provider/
-  options:
-    edwh-std-tls-options:
-      minVersion: VersionTLS12
-      cipherSuites:
-       # Recommended ciphers for TLSv1.2
-       - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-       - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-       - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
-       # Recommended ciphers for TLSv1.3
-       - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-       - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-       - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
-    tlsv13only:
-      minVersion: VersionTLS13
-
-
-
-http:
-  middlewares:
-    superset-cors:
-      headers:
-        accessControlAllowOriginList:
-          - "*"
-        accessControlAllowHeaders:
-          - "*"
-        accessControlAllowMethods:
-          - "*"
-        accessControlMaxAge: 100
-        addVaryHeader: true
-
-  routers:
-    superset-router:
-      rule: "Host(`superset.utils2.edwh.nl`)"
-      middlewares:
-        - superset-cors
-    # Bijbehorende labesl voor je docker compose service en CORS headers:
-    #  - "traefik.http.routers.superset-router.middlewares=superset-cors"
-    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolalloworiginlist=*"
-    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowmethods=*"
-    #  - "traefik.http.middlewares.superset-cors.headers.accesscontrolallowheaders=*"

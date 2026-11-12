@@ -8,13 +8,13 @@ http:
       service: error-pages
       tls: {}
 
-  middlewares:
-    global-errors:
-      errors:
-        status:
-          - "500-599"
-        service: error-pages
-        query: "/"
+  # middlewares:
+  #   global-errors:
+  #     errors:
+  #       status:
+  #         - "500-599"
+  #       service: error-pages
+  #       query: "/"
 
   services:
     error-pages:

@@ -50,7 +50,7 @@ entryPoints:
     http:
       middlewares:
         - security-baseline@file
-        - global-errors@file
+        # - global-errors@file
 
 certificatesResolvers:
   letsencrypt:

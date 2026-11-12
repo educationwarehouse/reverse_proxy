@@ -55,14 +55,12 @@ entryPoints:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
       httpChallenge:
         entryPoint: web
   staging:
     acme:
-      email:  # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
       httpChallenge:

@@ -95,3 +95,18 @@ services:
           - proxy
           - web2py.${HOSTING_DOMAIN}
           - socket.${HOSTING_DOMAIN}
+
+  error-pages:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./error-pages/default.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+      - type: bind
+        source: ./error-pages/404.html
+        target: /usr/share/nginx/html/404.html
+        read_only: true
+    networks:
+      - broker

@@ -1,0 +1,23 @@
+http:
+  routers:
+    fallback-errors:
+      rule: "HostRegexp(`.+`)"
+      entryPoints:
+        - web-secured
+      priority: 1
+      service: error-pages
+      tls: {}
+
+  # middlewares:
+  #   global-errors:
+  #     errors:
+  #       status:
+  #         - "500-599"
+  #       service: error-pages
+  #       query: "/"
+
+  services:
+    error-pages:
+      loadBalancer:
+        servers:
+          - url: "http://error-pages:80"

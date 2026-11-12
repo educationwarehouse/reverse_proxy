@@ -28,7 +28,7 @@ log:
 
 providers:
   file:
-    filename: /server/dynamic.yaml
+    directory: /server
     watch: true
   docker:
     # main help: https://doc.traefik.io/traefik/providers/docker/
@@ -50,18 +50,18 @@ entryPoints:
     http:
       middlewares:
         - security-baseline@file
-        - global-errors@file
+        # - global-errors@file
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/letsencrypt.json
       httpChallenge:
         entryPoint: web
   staging:
     acme:
-      email:  # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
+      email: it@educationwarehouse.nl # template: email: {TRAEFIK_CERTIFICATE_EMAIL}
       storage: /letsencrypt/staging.json
       httpChallenge:
         entryPoint: web

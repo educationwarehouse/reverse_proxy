@@ -45,6 +45,11 @@ services:
         source: ./server
         target: /server
 
+      - type: bind
+        source: ./error-pages/traefik.yml
+        target: /server/error-pages.yml
+        read_only: true
+
     labels:
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       ### see https://doc.traefik.io/traefik/v2.0/routing/routers/ for more
@@ -95,3 +100,18 @@ services:
           - proxy
           - web2py.${HOSTING_DOMAIN}
           - socket.${HOSTING_DOMAIN}
+
+  error-pages:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: ./error-pages/default.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+      - type: bind
+        source: ./error-pages/404.html
+        target: /usr/share/nginx/html/404.html
+        read_only: true
+    networks:
+      - broker

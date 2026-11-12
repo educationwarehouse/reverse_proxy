@@ -152,8 +152,9 @@ def mk_certificate(c: Context, domain):
         "openssl x509 -outform der -in root_cert/ca.cert.pem -out client/ca.cert.der-format.crt"
     )
 
-    with open("server/dynamic.yaml", "w") as stream:
-        stream.write(
+    dynamic_config = Path("server/dynamic.yaml")
+    if not dynamic_config.exists():
+        dynamic_config.write_text(
             textwrap.dedent("""
         tls:
           stores:
@@ -161,5 +162,15 @@ def mk_certificate(c: Context, domain):
               defaultCertificate:
                 certFile: /server/cert.pem
                 keyFile: /server/private.pem
+
+        http:
+          middlewares:
+            security-baseline:
+              headers:
+                stsSeconds: 31536000
+                stsIncludeSubdomains: false
+                stsPreload: false
+                contentTypeNosniff: true
+                referrerPolicy: same-origin
         """)
         )

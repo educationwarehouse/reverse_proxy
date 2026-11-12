@@ -45,6 +45,11 @@ services:
         source: ./server
         target: /server
 
+      - type: bind
+        source: ./error-pages/traefik.yml
+        target: /server/error-pages.yml
+        read_only: true
+
     labels:
       #### Labels define the behavior and rules of the traefik proxy for this container ####
       ### see https://doc.traefik.io/traefik/v2.0/routing/routers/ for more
